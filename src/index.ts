@@ -1,25 +1,24 @@
 import { KameleoonClient } from "@kameleoon/nodejs-sdk";
-import { KameleoonRequester } from "@kameleoon/nodejs-requester";
 import { WorkerVisitorCodeManager } from "./visitorCodeManager";
 import { WorkerEventSource } from "./eventSource";
+import { WorkerRequester } from "./requester";
 
 // Replace these placeholder value(s) with your Kameleoon credentials.
 const SITE_CODE = "<siteCode>";
 
-// Required only if TRACK_IN_WORKER == true
+// Required by the SDK for authenticated configuration and tracking requests (TRACK_IN_WORKER == true).
 const CLIENT_ID = "<clientID>";
 const CLIENT_SECRET = "<clientSecret>";
 
 // The recommended setup is to keep tracking disabled in the worker and send
-// tracking events via Engine.js instead.
+// tracking events via Engine.js or JS/React SDK instead.
 const TRACK_IN_WORKER = false;
 
 // Cloudflare Worker isolates keep the SDK configuration they loaded at startup.
-// The SDK refreshes that configuration only when `refreshDataFileIfStale()` is
-// called. With an hourly update interval this is usually unnecessary, because
-// the worker is often terminated sooner and a new isolate starts with a recent
-// configuration.
+// Enable this only when you need isolates to pick up fresh configuration
+// without waiting for the next isolate restart.
 const ENABLE_DATAFILE_REFRESH = false;
+const DATAFILE_UPDATE_INTERVAL_MINUTES = ENABLE_DATAFILE_REFRESH ? 1 : 60;
 
 export default {
   async fetch(request, env, ctx): Promise<Response> {
@@ -41,10 +40,10 @@ async function handleRequest(request: Request, ctx: ExecutionContext) {
         clientSecret: CLIENT_SECRET,
       },
       configuration: {
-        updateInterval: ENABLE_DATAFILE_REFRESH ? 1 : 60,
+        updateInterval: DATAFILE_UPDATE_INTERVAL_MINUTES,
       },
       externals: {
-        requester: new KameleoonRequester(),
+        requester: new WorkerRequester(),
         eventSource: new WorkerEventSource(),
         visitorCodeManager: new WorkerVisitorCodeManager(),
       },

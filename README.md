@@ -32,31 +32,30 @@ git clone https://github.com/Kameleoon/cloudflare-worker-starter-kit.git
 npm install
 ```
 
-3. Add your `account_id` to `wrangler.toml`. See [How to find `account_id`][5].
-
-4. Update the following values in `src/index.ts`:
+3. Update the following values in `src/index.ts`:
 
 - `SITE_CODE` - Site code from the [Kameleoon Platform][4].
 - `CLIENT_ID` and `CLIENT_SECRET` - Client credentials from your [Kameleoon Profile][6].
 - `TRACK_IN_WORKER` - Keep this as `false` unless you intentionally want the worker to send tracking events.
 - `ENABLE_DATAFILE_REFRESH` - Enable this only when you need more aggressive SDK configuration refreshes.
 
-5. Run the worker locally.
+4. Run the worker locally.
 
 ```sh
 npm start
 ```
 
-6. Deploy the worker to Cloudflare.
+5. Deploy the worker to Cloudflare.
 
 ```sh
 npm run deploy
 ```
 
+If your Cloudflare login has access to multiple accounts, add an `account_id` to `wrangler.toml`. See [How to find `account_id`][5].
+
 ## Examples
 
-The [`examples`](./examples) directory contains additional usage patterns.
-To try one, copy its contents into `src/index.ts` and run `npm start`.
+The [`examples`](./examples) directory contains additional usage patterns. To try one, point `main` in `wrangler.toml` at the example file or copy the example logic into `src/index.ts` and keep imports relative to the destination file.
 
 ## Commands
 
@@ -71,7 +70,8 @@ The core integration lives in `src/index.ts`. The worker initializes the SDK, re
 
 There are also a few helper files that adapt the SDK to Cloudflare Workers:
 
-- `src/eventSource.ts` - Blocks the unsupported [real-time update][10] flow with a clear error message because Cloudflare Workers do not provide `EventSource`.
+- `src/eventSource.ts` - Reports unsupported [real-time update][10] connections as recoverable errors so the SDK can fall back to polling.
+- `src/requester.ts` - Uses the Cloudflare Workers `fetch` API for SDK HTTP requests.
 - `src/visitorCodeManager.ts` - Stores and reads the Kameleoon visitor code from cookies so the same visitor can be recognized across requests.
 
 Error handling is intentionally minimal to keep the starter kit focused. In production, wrap SDK initialization and variation evaluation with proper error handling. See [SDK Error Handling][9].

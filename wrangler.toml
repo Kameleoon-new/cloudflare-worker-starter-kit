@@ -1,5 +1,5 @@
 name = "cloudflare-worker-starter-kit"
 main = "src/index.ts"
-compatibility_date = "2023-02-21"
-node_compat = true
 account_id = ""
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
